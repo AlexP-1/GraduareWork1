@@ -57,18 +57,21 @@ def get_group_members():
             'offset': offset,
             'group_id': group_id
         }
-        while True:
-            time.sleep(1/3)
-            response = requests.get(
-                'https://api.vk.com/method/groups.getMembers',
-                params=params
-            ).json()
-            group_member_ids.extend(response['response']['items'])
-            if len(response['response']['items']) < 1000:
-                break
-            else:
-                params['offset'] += counter
-            print('Requesting API . . .')
+        try:
+            while True:
+                time.sleep(1/3)
+                response = requests.get(
+                    'https://api.vk.com/method/groups.getMembers',
+                    params=params
+                ).json()
+                group_member_ids.extend(response['response']['items'])
+                if len(response['response']['items']) < 1000:
+                    break
+                else:
+                    params['offset'] += counter
+                print('Requesting API . . .')
+        except KeyError:
+            pass
         if check_groups(friends, group_member_ids):
             new_groups.remove(group)
         print(f'{processing_counter}/{len(groups)}')
@@ -78,24 +81,27 @@ def get_group_members():
 
 def get_data():
     data = []
-    for group in get_group_members():
-        params = {
-            'access_token': TOKEN,
-            'v': 5.89,
-            'group_id': group,
-            'fields': 'members_count'
-        }
-        time.sleep(1/3)
-        response = requests.get(
-            'https://api.vk.com/method/groups.getById',
-            params=params
-        ).json()
-        data_group = {
-            'name': response['response'][0]['name'],
-            'gid': response['response'][0]['id'],
-            'members_count': response['response'][0]['members_count']
-        }
-        data.append(data_group)
+    try:
+        for group in get_group_members():
+            params = {
+                'access_token': TOKEN,
+                'v': 5.89,
+                'group_id': group,
+                'fields': 'members_count'
+            }
+            time.sleep(1/3)
+            response = requests.get(
+                'https://api.vk.com/method/groups.getById',
+                params=params
+            ).json()
+            data_group = {
+                'name': response['response'][0]['name'],
+                'gid': response['response'][0]['id'],
+                'members_count': response['response'][0]['members_count']
+            }
+            data.append(data_group)
+    except KeyError:
+        pass
     return data
 
 
